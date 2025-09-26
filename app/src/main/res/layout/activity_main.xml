@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        app:cardElevation="6dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="CureMyBordem"
-                android:textSize="22sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"
                 android:gravity="center" />
@@ -35,7 +35,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Find interesting places nearby by entering a distance (km)."
+                android:text="Find interesting places nearby."
                 android:textSize="14sp"
                 android:paddingTop="6dp"
                 android:textColor="@android:color/darker_gray"
@@ -48,7 +48,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
 
         <EditText
             android:id="@+id/distanceInput"
@@ -69,6 +70,75 @@
             android:layout_marginStart="8dp"
             android:text="Search" />
     </LinearLayout>
+
+    <!-- Toggle for advanced options -->
+    <TextView
+        android:id="@+id/toggleAdvanced"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Advanced: Enter custom latitude/longitude"
+        android:textSize="14sp"
+        android:textColor="@color/design_default_color_primary"
+        android:padding="4dp"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <!-- Advanced inputs (hidden by default) -->
+    <LinearLayout
+        android:id="@+id/advancedLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        android:padding="8dp">
+
+        <!-- Lat/Lng inputs -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/latInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Latitude"
+                android:inputType="numberDecimal|numberSigned" />
+
+            <EditText
+                android:id="@+id/lngInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Longitude"
+                android:inputType="numberDecimal|numberSigned"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btnSetLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Set Custom Location" />
+
+            <Button
+                android:id="@+id/btnRevertLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Revert to My Location"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+    </LinearLayout>
+
 
     <!-- Results label -->
     <TextView

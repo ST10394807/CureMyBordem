@@ -11,15 +11,15 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.*
 
 class PlacesAdapter(
-    private var places: List<Place>,
-    private val userLat: Double?,
-    private val userLng: Double?
+    private var places: List<Place> = emptyList(),
+    private val userLat: Double? = null,
+    private val userLng: Double? = null
 ) : RecyclerView.Adapter<PlacesAdapter.PlaceViewHolder>() {
 
     class PlaceViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val name: TextView = itemView.findViewById(R.id.placeName)
         val address: TextView = itemView.findViewById(R.id.placeAddress)
-        val types: TextView = itemView.findViewById(R.id.placeTypes)
+        // val types: TextView = itemView.findViewById(R.id.placeTypes) // 🔥 commented for now
         val distance: TextView = itemView.findViewById(R.id.placeDistance)
         val mapButton: Button = itemView.findViewById(R.id.btnOpenMap)
     }
@@ -34,7 +34,7 @@ class PlacesAdapter(
 
         holder.name.text = place.displayName?.text ?: "Unknown"
         holder.address.text = place.formattedAddress ?: "No address"
-        holder.types.text = place.types?.joinToString(", ") ?: "No types"
+        // holder.types.text = place.types?.joinToString(", ") ?: "No types" // 🔥 commented for now
 
         // Show distance if possible
         if (userLat != null && userLng != null && place.location != null) {
