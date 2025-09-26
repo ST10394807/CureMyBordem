@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">curemybordem</string>
+    <string name="MAPS_API_KEY">AIzaSyB0j2n92T9NyP4gUkT49HZ1Bv6bBDH6A2s</string>
+
 </resources>
