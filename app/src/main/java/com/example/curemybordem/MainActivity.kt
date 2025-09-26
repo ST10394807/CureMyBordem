@@ -25,8 +25,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var apiService: PlacesApiServiceNew
     private lateinit var placesAdapter: PlacesAdapter
+
     private val apiKey = BuildConfig.MAPS_API_KEY
     private val tag = "AppDebug"
+
+    // store last known user location so adapter can calculate distance
+    private var userLat: Double? = null
+    private var userLng: Double? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +56,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Enter distance in km", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             val radiusMeters = distanceKm * 1000
             checkPermissionsAndFetchLocation(radiusMeters)
         }
@@ -61,8 +65,11 @@ class MainActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         val recyclerView = findViewById<RecyclerView>(R.id.placesRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        placesAdapter = PlacesAdapter()
+
+        // initialize empty adapter, will update once we fetch places
+        placesAdapter = PlacesAdapter(emptyList(), userLat, userLng)
         recyclerView.adapter = placesAdapter
+
         Log.d(tag, "RecyclerView initialized")
     }
 
@@ -80,7 +87,7 @@ class MainActivity : AppCompatActivity() {
                     .addHeader("Content-Type", "application/json")
                     .addHeader(
                         "X-Goog-FieldMask",
-                        "places.displayName,places.formattedAddress,places.types"
+                        "places.displayName,places.formattedAddress,places.types,places.location"
                     )
                     .build()
                 Log.d(tag, "Outgoing request: ${newRequest.method} ${newRequest.url}")
@@ -120,15 +127,15 @@ class MainActivity : AppCompatActivity() {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
-                val lat = location.latitude
-                val lng = location.longitude
-                Log.i(tag, "Got location: lat=$lat, lng=$lng, radius=$radius")
+                userLat = location.latitude
+                userLng = location.longitude
+                Log.i(tag, "Got location: lat=$userLat, lng=$userLng, radius=$radius")
 
                 val request = NearbySearchRequest(
                     includedTypes = listOf("restaurant"),
                     maxResultCount = 10,
                     locationRestriction = LocationRestriction(
-                        Circle(LatLng(lat, lng), radius)
+                        Circle(LatLng(userLat!!, userLng!!), radius)
                     )
                 )
 
@@ -160,7 +167,10 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this@MainActivity, "No places found.", Toast.LENGTH_SHORT).show()
                     } else {
                         Log.i(tag, "Places found: ${places.size}")
-                        placesAdapter.updatePlaces(places) // 🔥 show results in RecyclerView
+
+                        // update adapter with fresh data and user location
+                        placesAdapter = PlacesAdapter(places, userLat, userLng)
+                        findViewById<RecyclerView>(R.id.placesRecyclerView).adapter = placesAdapter
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()

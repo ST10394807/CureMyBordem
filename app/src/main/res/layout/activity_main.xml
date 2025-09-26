@@ -4,36 +4,71 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@android:color/white"
     android:padding="16dp">
 
-    <!-- Welcome message -->
-    <TextView
-        android:id="@+id/welcomeText"
+    <!-- Header Card -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Welcome to CureMyBordem!\nEnter a distance (km) to find nearby places of interest."
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:padding="8dp"
-        android:gravity="center" />
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
 
-    <!-- Input for distance -->
-    <EditText
-        android:id="@+id/distanceInput"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/welcomeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CureMyBordem"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Find interesting places nearby by entering a distance (km)."
+                android:textSize="14sp"
+                android:paddingTop="6dp"
+                android:textColor="@android:color/darker_gray"
+                android:gravity="center" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Search controls -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter distance in km"
-        android:inputType="numberDecimal"
-        android:layout_marginTop="8dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <!-- Search button -->
-    <Button
-        android:id="@+id/searchButton"
-        style="@style/Widget.MaterialComponents.Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Search Places"
-        android:layout_marginTop="12dp" />
+        <EditText
+            android:id="@+id/distanceInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Enter distance (km)"
+            android:inputType="numberDecimal"
+            android:padding="10dp"
+            android:background="@android:drawable/edit_text"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/searchButton"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Search" />
+    </LinearLayout>
 
     <!-- Results label -->
     <TextView
@@ -42,17 +77,18 @@
         android:layout_height="wrap_content"
         android:text="Results:"
         android:textStyle="bold"
+        android:textSize="16sp"
         android:paddingTop="16dp"
-        android:textSize="16sp" />
+        android:paddingBottom="4dp"
+        android:textColor="@android:color/black" />
 
-    <!-- RecyclerView for displaying results -->
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/placesRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingTop="8dp"
-        android:divider="?android:attr/dividerVertical"
-        android:dividerHeight="1dp" />
+        android:clipToPadding="false"
+        android:paddingBottom="8dp" />
 
 </LinearLayout>

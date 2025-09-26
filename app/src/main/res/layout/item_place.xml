@@ -3,47 +3,59 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="6dp"
-    android:layout_marginHorizontal="4dp"
-    android:clickable="true"
-    android:focusable="true"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="6dp"
-    app:strokeColor="@android:color/darker_gray"
-    app:strokeWidth="1dp">
+    android:layout_margin="8dp"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="12dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="16dp">
 
+        <!-- Place Name -->
         <TextView
             android:id="@+id/placeName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Business Name"
-            android:textStyle="bold"
+            android:text="Place Name"
             android:textSize="18sp"
-            android:textColor="@android:color/black" />
+            android:textStyle="bold" />
 
+        <!-- Address -->
         <TextView
             android:id="@+id/placeAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="123 Example St, City"
+            android:text="Address"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
             android:paddingTop="4dp" />
 
+        <!-- Types -->
         <TextView
             android:id="@+id/placeTypes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="restaurant, cafe, bar"
-            android:textSize="13sp"
-            android:textColor="@android:color/holo_blue_dark"
+            android:text="Types"
+            android:textSize="12sp"
             android:paddingTop="2dp" />
-    </LinearLayout>
 
+        <!-- Distance -->
+        <TextView
+            android:id="@+id/placeDistance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Distance"
+            android:textSize="12sp"
+            android:paddingTop="2dp" />
+
+        <!-- Button -->
+        <Button
+            android:id="@+id/btnOpenMap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View on Map"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

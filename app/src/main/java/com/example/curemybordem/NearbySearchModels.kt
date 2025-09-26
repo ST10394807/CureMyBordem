@@ -1,9 +1,12 @@
 package com.example.curemybordem
 
-// Request models
+// -----------------------------
+// Models for Google Places API
+// -----------------------------
+
 data class NearbySearchRequest(
-    val includedTypes: List<String>? = null,
-    val maxResultCount: Int = 10,
+    val includedTypes: List<String>,
+    val maxResultCount: Int,
     val locationRestriction: LocationRestriction
 )
 
@@ -21,18 +24,21 @@ data class LatLng(
     val longitude: Double
 )
 
+// -----------------------------
 // Response models
+// -----------------------------
+
 data class NearbySearchResponse(
-    val places: List<Place>? = null
+    val places: List<Place>?
 )
 
 data class Place(
-    val displayName: DisplayName? = null,
-    val formattedAddress: String? = null,
-    val types: List<String>? = null // 👈 added types field
+    val displayName: DisplayName?,
+    val formattedAddress: String?,
+    val types: List<String>?,
+    val location: LatLng? // added to support “View on Map” + distance
 )
 
 data class DisplayName(
-    val text: String? = null,
-    val languageCode: String? = null
+    val text: String?
 )
