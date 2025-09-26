@@ -7,7 +7,18 @@
     android:background="@android:color/white"
     android:padding="16dp">
 
-    <!-- Header -->
+    <!-- Logo Header -->
+    <ImageView
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/fulllogo"
+        android:contentDescription="Lookation Logo"
+        android:layout_gravity="center"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Header Card -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,21 +34,10 @@
             android:gravity="center_horizontal">
 
             <TextView
-                android:id="@+id/welcomeText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="CureMyBordem"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:gravity="center" />
-
-            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Find interesting places nearby."
-                android:textSize="14sp"
-                android:paddingTop="6dp"
+                android:textSize="16sp"
                 android:textColor="@android:color/darker_gray"
                 android:gravity="center" />
         </LinearLayout>
@@ -120,7 +120,8 @@
         android:layout_height="wrap_content"
         android:text="Advanced: Enter custom latitude/longitude"
         android:textSize="14sp"
-        android:textColor="@color/design_default_color_primary"
+        android:textStyle="bold"
+        android:textColor="#1976D2"
         android:padding="4dp"
         android:clickable="true"
         android:focusable="true" />
@@ -181,7 +182,6 @@
     </LinearLayout>
 
     <!-- Results -->
-    <!-- Results -->
     <TextView
         android:id="@+id/resultsText"
         android:layout_width="wrap_content"
@@ -201,7 +201,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"
-        android:layout_marginBottom="12dp"/>
+        android:layout_marginBottom="12dp" />
 
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
@@ -211,6 +211,5 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingBottom="8dp" />
-
 
 </LinearLayout>

@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="blue_primary">#1976D2</color>        <!-- main blue -->
+    <color name="blue_variant">#1565C0</color>       <!-- darker blue -->
+    <color name="blue_secondary">#42A5F5</color>     <!-- lighter accent -->
 </resources>
