@@ -7,7 +7,7 @@
     android:background="@android:color/white"
     android:padding="16dp">
 
-    <!-- Header Card -->
+    <!-- Header -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,35 +43,77 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Search controls -->
-    <LinearLayout
+    <!-- Search Controls -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="8dp">
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
 
-        <EditText
-            android:id="@+id/distanceInput"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Enter distance (km)"
-            android:inputType="numberDecimal"
-            android:padding="10dp"
-            android:background="@android:drawable/edit_text"
-            android:textSize="16sp" />
+            android:orientation="vertical"
+            android:padding="12dp">
 
-        <Button
-            android:id="@+id/searchButton"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Search" />
-    </LinearLayout>
+            <!-- Place Type -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Search by place type:"
+                android:textStyle="bold"
+                android:paddingBottom="4dp"
+                android:textColor="@android:color/black" />
 
-    <!-- Toggle for advanced options -->
+            <AutoCompleteTextView
+                android:id="@+id/typeAutoComplete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search place type"
+                android:inputType="text"
+                android:dropDownHeight="400dp"
+                android:padding="8dp"
+                android:background="@android:drawable/edit_text" />
+
+            <Button
+                android:id="@+id/btnShowAllTypes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Show All Types"
+                android:layout_marginTop="8dp" />
+
+            <!-- Distance + Search Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="12dp">
+
+                <EditText
+                    android:id="@+id/distanceInput"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Enter distance (km)"
+                    android:inputType="numberDecimal"
+                    android:padding="10dp"
+                    android:background="@android:drawable/edit_text"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/searchButton"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Search" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Advanced Options -->
     <TextView
         android:id="@+id/toggleAdvanced"
         android:layout_width="wrap_content"
@@ -83,7 +125,6 @@
         android:clickable="true"
         android:focusable="true" />
 
-    <!-- Advanced inputs (hidden by default) -->
     <LinearLayout
         android:id="@+id/advancedLayout"
         android:layout_width="match_parent"
@@ -93,7 +134,7 @@
         android:visibility="gone"
         android:padding="8dp">
 
-        <!-- Lat/Lng inputs -->
+        <!-- Lat/Lng Inputs -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -117,7 +158,7 @@
                 android:layout_marginStart="8dp" />
         </LinearLayout>
 
-        <!-- Action buttons -->
+        <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -139,11 +180,11 @@
         </LinearLayout>
     </LinearLayout>
 
-
-    <!-- Results label -->
+    <!-- Results -->
+    <!-- Results -->
     <TextView
         android:id="@+id/resultsText"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Results:"
         android:textStyle="bold"
@@ -151,6 +192,16 @@
         android:paddingTop="16dp"
         android:paddingBottom="4dp"
         android:textColor="@android:color/black" />
+
+    <!-- ProgressBar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:layout_marginBottom="12dp"/>
 
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
@@ -160,5 +211,6 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingBottom="8dp" />
+
 
 </LinearLayout>

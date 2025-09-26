@@ -5,10 +5,8 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -21,20 +19,24 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
-import kotlin.math.*
-
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlin.math.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var apiService: PlacesApiServiceNew
     private lateinit var placesAdapter: PlacesAdapter
+    private lateinit var progressBar: ProgressBar
     private val apiKey = BuildConfig.MAPS_API_KEY
     private val tag = "AppDebug"
 
     // Track user location for distance calc
     private var currentLat: Double? = null
     private var currentLng: Double? = null
+    private var currentPlaces: List<Place> = emptyList()
+
+    // Track selected type
+    private var selectedType: String = "restaurant"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,16 +50,21 @@ class MainActivity : AppCompatActivity() {
 
         setupRetrofit()
         setupRecyclerView()
+        setupTypeDropdown()
+
+        progressBar = findViewById(R.id.progressBar)
 
         val searchButton = findViewById<Button>(R.id.searchButton)
         val distanceInput = findViewById<EditText>(R.id.distanceInput)
         val latInput = findViewById<EditText>(R.id.latInput)
         val lngInput = findViewById<EditText>(R.id.lngInput)
-
-        // Toggle advanced section
         val toggleAdvanced = findViewById<TextView>(R.id.toggleAdvanced)
         val advancedLayout = findViewById<View>(R.id.advancedLayout)
+        val btnSetLocation = findViewById<Button>(R.id.btnSetLocation)
+        val btnRevertLocation = findViewById<Button>(R.id.btnRevertLocation)
+        val btnShowAllTypes = findViewById<Button>(R.id.btnShowAllTypes)
 
+        // Toggle advanced inputs
         toggleAdvanced.setOnClickListener {
             if (advancedLayout.visibility == View.GONE) {
                 advancedLayout.visibility = View.VISIBLE
@@ -68,52 +75,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        searchButton.setOnClickListener {
-            Log.d(tag, "Search button clicked")
-
-            val distanceKm = distanceInput.text.toString().toDoubleOrNull()
-            if (distanceKm == null) {
-                Toast.makeText(this, "Enter distance in km", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val radiusMeters = distanceKm * 1000
-
-            // If user entered custom lat/lng, use it
-            val latText = latInput.text.toString()
-            val lngText = lngInput.text.toString()
-            if (latText.isNotBlank() && lngText.isNotBlank()) {
-                val lat = latText.toDoubleOrNull()
-                val lng = lngText.toDoubleOrNull()
-                if (lat != null && lng != null) {
-                    Log.i(tag, "Using custom lat/lng: $lat,$lng")
-                    currentLat = lat
-                    currentLng = lng
-                    makeNearbySearchRequest(
-                        NearbySearchRequest(
-                            includedTypes = listOf("restaurant"),
-                            maxResultCount = 10,
-                            locationRestriction = LocationRestriction(
-                                Circle(LatLng(lat, lng), radiusMeters)
-                            )
-                        )
-                    )
-                    return@setOnClickListener
-                }
-            }
-
-            // Otherwise, use current GPS location
-            checkPermissionsAndFetchLocation(radiusMeters)
-        }
-
-        val btnSetLocation = findViewById<Button>(R.id.btnSetLocation)
-        val btnRevertLocation = findViewById<Button>(R.id.btnRevertLocation)
-
+        // Set custom location
         btnSetLocation.setOnClickListener {
-            val latText = latInput.text.toString()
-            val lngText = lngInput.text.toString()
-            val lat = latText.toDoubleOrNull()
-            val lng = lngText.toDoubleOrNull()
-
+            val lat = latInput.text.toString().toDoubleOrNull()
+            val lng = lngInput.text.toString().toDoubleOrNull()
             if (lat != null && lng != null) {
                 currentLat = lat
                 currentLng = lng
@@ -123,6 +88,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Revert to GPS
         btnRevertLocation.setOnClickListener {
             latInput.text.clear()
             lngInput.text.clear()
@@ -131,6 +97,34 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Reverted to GPS location", Toast.LENGTH_SHORT).show()
         }
 
+        // Search button
+        searchButton.setOnClickListener {
+            val distanceKm = distanceInput.text.toString().toDoubleOrNull()
+            if (distanceKm == null) {
+                Toast.makeText(this, "Enter distance in km", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val radiusMeters = distanceKm * 1000
+
+            if (currentLat != null && currentLng != null) {
+                makeNearbySearchRequest(
+                    NearbySearchRequest(
+                        includedTypes = listOf(selectedType),
+                        maxResultCount = 10,
+                        locationRestriction = LocationRestriction(
+                            Circle(LatLng(currentLat!!, currentLng!!), radiusMeters)
+                        )
+                    )
+                )
+            } else {
+                checkPermissionsAndFetchLocation(radiusMeters)
+            }
+        }
+
+        // Show all place types
+        btnShowAllTypes.setOnClickListener {
+            showTypesPopup()
+        }
     }
 
     /** Setup RecyclerView */
@@ -142,6 +136,51 @@ class MainActivity : AppCompatActivity() {
         Log.d(tag, "RecyclerView initialized")
     }
 
+    /** Setup type dropdown */
+    private fun setupTypeDropdown() {
+        val typeInput = findViewById<AutoCompleteTextView>(R.id.typeAutoComplete)
+
+        val placeTypes = listOf(
+            // Food & Drink
+            "restaurant", "cafe", "bar", "bakery", "supermarket", "meal_takeaway", "fast_food",
+            "food", "grocery_or_supermarket",
+
+            // Shopping
+            "shopping_mall", "store", "clothing_store", "shoe_store", "book_store", "convenience_store",
+            "electronics_store", "furniture_store", "jewelry_store", "department_store",
+
+            // Health & Wellness
+            "pharmacy", "hospital", "doctor", "dentist", "veterinary_care", "health",
+
+            // Education
+            "school", "university", "library",
+
+            // Leisure & Entertainment
+            "gym", "park", "museum", "art_gallery", "stadium", "zoo", "aquarium",
+            "amusement_park", "movie_theater", "night_club", "tourist_attraction",
+
+            // Travel & Transport
+            "train_station", "bus_station", "subway_station", "airport", "taxi_stand", "transit_station",
+
+            // Lodging
+            "hotel", "lodging", "campground", "rv_park",
+
+            // Services
+            "atm", "bank", "post_office", "gas_station", "car_rental", "car_repair",
+            "car_wash", "parking", "police", "fire_station"
+        )
+
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, placeTypes)
+        typeInput.setAdapter(adapter)
+        typeInput.setText(selectedType, false)
+
+        typeInput.setOnItemClickListener { _, _, position, _ ->
+            selectedType = placeTypes[position]
+            Log.i(tag, "Selected type: $selectedType")
+        }
+    }
+
     /** Configure Retrofit */
     private fun setupRetrofit() {
         val logging = HttpLoggingInterceptor { msg -> Log.d("$tag-HTTP", msg) }
@@ -150,8 +189,7 @@ class MainActivity : AppCompatActivity() {
         val client = OkHttpClient.Builder()
             .addInterceptor(logging)
             .addInterceptor { chain ->
-                val original = chain.request()
-                val newRequest = original.newBuilder()
+                val newRequest = chain.request().newBuilder()
                     .addHeader("X-Goog-Api-Key", apiKey)
                     .addHeader("Content-Type", "application/json")
                     .addHeader(
@@ -159,7 +197,6 @@ class MainActivity : AppCompatActivity() {
                         "places.displayName,places.formattedAddress,places.types,places.location"
                     )
                     .build()
-                Log.d(tag, "Outgoing request: ${newRequest.method} ${newRequest.url}")
                 chain.proceed(newRequest)
             }
             .build()
@@ -176,15 +213,10 @@ class MainActivity : AppCompatActivity() {
 
     /** Check location permissions */
     private fun checkPermissionsAndFetchLocation(radius: Double) {
-        Log.d(tag, "Checking location permissions...")
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1
-            )
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
         } else {
             fetchUserLocation(radius)
         }
@@ -192,16 +224,14 @@ class MainActivity : AppCompatActivity() {
 
     /** Fetch user location */
     private fun fetchUserLocation(radius: Double) {
-        Log.d(tag, "fetchUserLocation() called")
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 currentLat = location.latitude
                 currentLng = location.longitude
-                Log.i(tag, "Got location: lat=$currentLat, lng=$currentLng, radius=$radius")
 
                 val request = NearbySearchRequest(
-                    includedTypes = listOf("restaurant"),
+                    includedTypes = listOf(selectedType),
                     maxResultCount = 10,
                     locationRestriction = LocationRestriction(
                         Circle(LatLng(currentLat!!, currentLng!!), radius)
@@ -211,62 +241,96 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Log.e(tag, "Location is null")
             }
-        }.addOnFailureListener { e ->
-            Log.e(tag, "Failed to get location: ${e.message}", e)
         }
     }
 
     /** Make Places API request */
     private fun makeNearbySearchRequest(request: NearbySearchRequest) {
-        Log.d(tag, "Sending NearbySearchRequest...")
-
+        progressBar.visibility = View.VISIBLE // 👈 Show loading
         apiService.searchNearby(request).enqueue(object : Callback<NearbySearchResponse> {
             override fun onResponse(
                 call: Call<NearbySearchResponse>,
                 response: Response<NearbySearchResponse>
             ) {
-                Log.d(tag, "HTTP response received. Success=${response.isSuccessful}")
-
+                progressBar.visibility = View.GONE // 👈 Hide loading
                 if (response.isSuccessful) {
-                    val places = response.body()?.places
-                    if (places.isNullOrEmpty()) {
-                        Log.w(tag, "No places found.")
+                    val places = response.body()?.places ?: emptyList()
+                    if (places.isEmpty()) {
                         Toast.makeText(this@MainActivity, "No places found.", Toast.LENGTH_SHORT).show()
                     } else {
-                        Log.i(tag, "Places found: ${places.size}")
-                        // ✅ Sort places by distance if we have a reference point
-                        val sortedPlaces = if (currentLat != null && currentLng != null) {
-                            places.sortedBy { place ->
-                                place.location?.let {
-                                    haversine(currentLat!!, currentLng!!, it.latitude, it.longitude)
-                                } ?: Double.MAX_VALUE
+                        currentPlaces = if (currentLat != null && currentLng != null) {
+                            places.sortedBy { p ->
+                                p.location?.let { haversine(currentLat!!, currentLng!!, it.latitude, it.longitude) }
+                                    ?: Double.MAX_VALUE
                             }
-                        } else {
-                            places // no sorting if no location available
-                        }
+                        } else places
 
-                        placesAdapter = PlacesAdapter(sortedPlaces, currentLat, currentLng)
+                        placesAdapter = PlacesAdapter(currentPlaces, currentLat, currentLng)
                         findViewById<RecyclerView>(R.id.placesRecyclerView).adapter = placesAdapter
-
                     }
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    Log.e(tag, "API error: code=${response.code()}, body=$errorBody")
+                    Log.e(tag, "API error: ${response.code()} ${response.message()}")
                 }
             }
 
             override fun onFailure(call: Call<NearbySearchResponse>, t: Throwable) {
+                progressBar.visibility = View.GONE // 👈 Hide loading
                 Log.e(tag, "Network failure: ${t.message}", t)
             }
         })
     }
+
+    /** Show types in popup */
+    private fun showTypesPopup() {
+        val placeTypes = listOf(
+            // Food & Drink
+            "restaurant", "cafe", "bar", "bakery", "supermarket", "meal_takeaway", "fast_food",
+            "food", "grocery_or_supermarket",
+
+            // Shopping
+            "shopping_mall", "store", "clothing_store", "shoe_store", "book_store", "convenience_store",
+            "electronics_store", "furniture_store", "jewelry_store", "department_store",
+
+            // Health & Wellness
+            "pharmacy", "hospital", "doctor", "dentist", "veterinary_care", "health",
+
+            // Education
+            "school", "university", "library",
+
+            // Leisure & Entertainment
+            "gym", "park", "museum", "art_gallery", "stadium", "zoo", "aquarium",
+            "amusement_park", "movie_theater", "night_club", "tourist_attraction",
+
+            // Travel & Transport
+            "train_station", "bus_station", "subway_station", "airport", "taxi_stand", "transit_station",
+
+            // Lodging
+            "hotel", "lodging", "campground", "rv_park",
+
+            // Services
+            "atm", "bank", "post_office", "gas_station", "car_rental", "car_repair",
+            "car_wash", "parking", "police", "fire_station"
+        )
+
+
+        AlertDialog.Builder(this)
+            .setTitle("Available Place Types")
+            .setItems(placeTypes.toTypedArray()) { _, which ->
+                selectedType = placeTypes[which]
+                findViewById<AutoCompleteTextView>(R.id.typeAutoComplete).setText(selectedType, false)
+            }
+            .setPositiveButton("Close", null)
+            .show()
+    }
 }
 
+/** Distance helper */
 private fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-    val R = 6371 // Earth radius in km
+    val R = 6371
     val dLat = Math.toRadians(lat2 - lat1)
     val dLon = Math.toRadians(lon2 - lon1)
-    val a = sin(dLat / 2).pow(2.0) + cos(Math.toRadians(lat1)) *
-            cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2.0)
+    val a = sin(dLat / 2).pow(2.0) +
+            cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+            sin(dLon / 2).pow(2.0)
     return R * 2 * atan2(sqrt(a), sqrt(1 - a))
 }
